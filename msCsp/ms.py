@@ -1,27 +1,14 @@
 import random
-import minesweeper_csp
-from FieldButton import *
-from cspbase import *
-from propagators import *
+import msCsp
+from BoardButton import *
+from csp import *
+from props import *
 
 
 class Minesweeper:
-    """Minesweeper Class:
-        The game board is a list of lists:
-
-        [ [  ]
-         [  ]
-         .
-         .
-         .
-         [  ] ]
-
-        such that board[i][i] is the FieldButton (object) that built to represent
-        the button in cell i,j of the game board. (by default indexed from (0,0) to (10,10))"""
-
     def __init__(self, master):
-
         self.frame = Frame(master)
+        self.frame.configure(background='#181a19')
         self.frame.pack()
 
         # Number of games played and won
@@ -43,14 +30,15 @@ class Minesweeper:
         self.first_click_button = None
 
         # Initialize images for newGame button.
-        self.img_sun_normal = PhotoImage(file="images/img_sun_normal.gif")
-        self.img_sun_normal_press = PhotoImage(file="images/img_sun_normal_press.gif")
-        self.img_sun_move = PhotoImage(file="images/img_sun_move.gif")
-        self.img_sun_win = PhotoImage(file="images/img_sun_win.gif")
-        self.img_sun_lose = PhotoImage(file="images/img_sun_lose.gif")
+        self.sumWNormal = PhotoImage(file="images/sumW.png")
+        self.sumWPress = PhotoImage(file="images/sumW.png")
+        self.sumWMove = PhotoImage(file="images/sumW.png")
+        self.sumLULWin = PhotoImage(file="images/sumLul.png")
+        self.sumFailLose = PhotoImage(file="images/sumFail.png")
 
         # Initialize images for cell button.
-        self.images = {'blank': PhotoImage(file="images/img_blank.gif"), 'mine': PhotoImage(file="images/img_mine.gif"),
+        self.images = {'blank': PhotoImage(file="images/blackSquare.png"),
+                       'mine': PhotoImage(file="images/img_mine.gif"),
                        'hit_mine': PhotoImage(file="images/img_hit_mine.gif"),
                        'flag': PhotoImage(file="images/img_flag.gif"),
                        'wrong': PhotoImage(file="images/img_wrong_mine.gif"), 'no': []}
@@ -67,28 +55,34 @@ class Minesweeper:
             self.import_board(board)
 
         # Initialize newGame button.
-        self.newGameButton = Button(self.frame, image=self.img_sun_normal)
+        self.newGameButton = Button(self.frame, image=self.sumWNormal,
+                                    background='#181a19', foreground='#d10232', highlightbackground='#000000')
         self.newGameButton.grid(row=0, column=0, columnspan=self.col_size)
         self.newGameButton.bind("<Button-1>", lambda Button: self.newGame())
 
         # Initialize remaining mines labels.
-        self.remain_label = Label(self.frame, text="remaining mines: ")
+        self.remain_label = Label(self.frame, text="remaining mines: ",
+                                  background='#181a19', foreground='#d10232', highlightbackground='#000000')
         self.remain_label.grid(row=self.row_size + 1, column=0, columnspan=4, sticky=W)
-        self.remain_label2 = Label(self.frame, text=self.mines_amount)
+        self.remain_label2 = Label(self.frame, text=self.mines_amount,
+                                   background='#181a19', foreground='#d10232', highlightbackground='#000000')
         self.remain_label2.grid(row=self.row_size + 1, column=4, columnspan=self.row_size, sticky=W)
 
         # Initialize solve by step button.
-        self.solveButton = Button(self.frame, text="Solve by Step")
+        self.solveButton = Button(self.frame, text="Solve by Step",
+                                  background='#181a19', foreground='#d10232', highlightbackground='#000000')
         self.solveButton.grid(row=self.row_size + 2, column=0, columnspan=self.col_size, sticky=E)
         self.solveButton.bind("<Button-1>", lambda Button: self.solve_step())
 
         # Initialize solve complete button.
-        self.solveButton = Button(self.frame, text="Solve Complete")
+        self.solveButton = Button(self.frame, text="Solve Complete",
+                                  background='#181a19', foreground='#d10232', highlightbackground='#000000')
         self.solveButton.grid(row=self.row_size + 2, column=0, columnspan=self.col_size, sticky=W)
         self.solveButton.bind("<Button-1>", lambda Button: self.solve_complete())
 
         # Initialize test solve complete button.
-        self.solveButton = Button(self.frame, text="Solve Complete x times")
+        self.solveButton = Button(self.frame, text="Solve Complete x times",
+                                  background='#181a19', foreground='#d10232', highlightbackground='#000000')
         self.solveButton.grid(row=self.row_size + 3, column=0, columnspan=self.col_size, sticky=W)
         self.solveButton.bind("<Button-1>", lambda Button: self.solve_complete_multiple(1000))
 
@@ -110,19 +104,16 @@ class Minesweeper:
 
         # Reset remaining mines label and newGame button.
         self.remain_label2.config(text=self.remaining_mines)
-        self.newGameButton.config(image=self.img_sun_normal)
+        self.newGameButton.config(image=self.sumWNormal)
 
     def init_board(self):
         """Initialize game board with buttons.
-        The board is a list of lists, inner lists' elements are FieldButton object.
-        [[ ],
-        [ ]]"""
+        The board is a list of lists, inner lists' elements are BoardButton object."""
+
         for row in range(self.row_size):
             lis = []
             for col in range(self.col_size):
-                button = FieldButton(row, col, self.frame, self.images)
-
-                # first row grid for new game button
+                button = BoardButton(row, col, self.frame, self.images)
                 button.grid(row=row + 1, column=col)
                 lis.append(button)
                 self.buttons.append(button)
@@ -134,13 +125,11 @@ class Minesweeper:
             button.bind('<Button-3>', self.rmbWrapper(button))
 
     def init_random_mines(self):
-        """Initialize mines randomly."""
         mines = self.mines_amount
         while mines:
             buttons = self.get_surrounding_buttons(self.first_click_button.x, self.first_click_button.y)
             buttons.append(self.first_click_button)
 
-            # flag to check if random coordinates matches the initial click's 9 grids
             match = True
             row = None
             col = None
@@ -159,7 +148,6 @@ class Minesweeper:
                 mines -= 1
 
     def get_surrounding_buttons(self, row, col):
-        """Return a list of surrounding buttons of button at row and col in board."""
         SURROUNDING = ((-1, -1), (-1, 0), (-1, 1),
                        (0, -1), (0, 1),
                        (1, -1), (1, 0), (1, 1))
@@ -175,7 +163,7 @@ class Minesweeper:
         return neighbours
 
     def update_surrounding_buttons(self, row, col, value):
-        """Update surrounding buttons' value adding given value."""
+        """Update surrounding buttons"""
         cells = self.get_surrounding_buttons(row, col)
         for cell in cells:
             if not cell.is_mine():
@@ -188,26 +176,24 @@ class Minesweeper:
         return lambda Button: self.rmbClicked(button)
 
     def lmbClicked(self, button):
-        """Left click action on given button."""
         if self.first_click:
             self.first_click_button = button
             self.init_random_mines()
             self.first_click = False
 
-        # Do nothing if it's visible or it's flagged.
         if button.is_show() or button.is_flag():
             return
 
-        # Case0: hits a number button, show the button.
+        # Case0: hits a number button
         button.show()
 
-        # Case1: hits a mine, game over.
+        # Case1: hits a mine
         if button.is_mine():
             button.show_hit_mine()
-            self.newGameButton.config(image=self.img_sun_lose)
+            self.newGameButton.config(image=self.sumFailLose)
             self.gameOver()
 
-        # Case2: hits an empty button, keep showing surrounding buttons until all not empty.
+        # Case2: hits an empty button
         elif button.value == 0:
             buttons = [button]
             while buttons:
@@ -218,18 +204,13 @@ class Minesweeper:
                         buttons.append(neighbour)
                     neighbour.show()
 
-        # Check whether the game wins or not.
         if self.is_win():
             self.gameOver()
 
     def rmbClicked(self, button):
-        """Right click action on given button."""
-
-        # Do nothing if it's visible.
         if button.is_show():
             return
 
-        # Flag/Unflag a button.
         if button.is_flag():
             button.flag()
             self.flags -= 1
@@ -237,7 +218,6 @@ class Minesweeper:
             button.flag()
             self.flags += 1
 
-        # Update remaining mines label.
         self.remaining_mines = (self.mines_amount - self.flags) if self.flags < self.mines_amount else 0
         self.remain_label2.config(text=self.remaining_mines)
 
@@ -258,20 +238,19 @@ class Minesweeper:
             button.unbind('<Button-3>')
 
     def is_win(self):
-        """Return True if game wins; False otherwise. The game wins if all buttons are either visible or flagged, and
-        the amount of flags equals the amount of mines."""
+        """The game wins if all buttons are either visible or flagged, and
+        the amount of flags equals the amount of mines. Return True if game wins; False otherwise."""
         for button in self.buttons:
             if not button.is_show() and not button.is_mine():
                 return False
-        self.newGameButton.config(image=self.img_sun_win)
+        self.newGameButton.config(image=self.sumLULWin)
         return True
 
     def solve_complete(self):
-        """Solve current game completely."""
+        """Solve current game."""
         if self.is_over:
             return
 
-        # Unflag all buttons.
         for button in self.buttons:
             if button.is_flag():
                 button.flag()
@@ -279,7 +258,6 @@ class Minesweeper:
         while not self.is_over:
             assigned = self.solve_step()
 
-            # No variable assigned by CSP.
             if not assigned:
                 choose_button = self.guess_move()
                 self.lmbClicked(choose_button)
@@ -305,7 +283,6 @@ class Minesweeper:
         self.game_times = 0
 
     def guess_move(self):
-        """Return an unclick button."""
         buttons = []
         corners = [self.board[0][0], self.board[0][self.col_size - 1], self.board[self.row_size - 1][0],
                    self.board[self.row_size - 1][self.col_size - 1]]
@@ -320,24 +297,18 @@ class Minesweeper:
         return random.choice(buttons)
 
     def solve_step(self):
-        """Solve parts of the game bases on current board's information by using CSP.
-        Return the number of variables made."""
         is_assigned = False
 
-        csp = minesweeper_csp.cspModel(self)
+        csp = msCsp.cspModel(self)
 
         solver = BT(csp)
         solver.backtrackingSearch(prop_BT)
         for var in csp.get_all_vars():
-
-            # noinspection PyBroadException
             try:
                 cell = var.name.split()
                 row = int(cell[0])
                 col = int(cell[1])
             except:
-                # continue if it's not a variable in board.
-                # in board variable name's format: row, col
                 continue
 
             if var.get_assigned_value() == 1:
@@ -366,7 +337,7 @@ class Minesweeper:
         for row in range(self.row_size):
             lis = []
             for col in range(self.col_size):
-                button = FieldButton(row, col, self.frame, self.images, board[row][col])
+                button = BoardButton(row, col, self.frame, self.images, board[row][col])
                 if button.is_mine():
                     self.mines.append(button)
                     self.mines_amount += 1

@@ -1,114 +1,38 @@
 # import time
 
-"""Constraint Satisfaction Routines
-   A) class Variable
-
-      This class allows one to define CSP variables.
-
-      On initialization the variable object can be given a name, and
-      an original domain of values. This list of domain values can be
-      added but NOT deleted from.
-      
-      To support constraint propagation, the class also maintains a
-      set of flags to indicate if a value is still in its current domain.
-      So one can remove values, add them back, and query if they are 
-      still current. 
-
-    B) class constraint
-
-      This class allows one to define constraints specified by tables
-      of satisfying assignments.
-
-      On initialization the variables the constraint is over is
-      specified (i.e. the scope of the constraint). This must be an
-      ORDERED list of variables. This list of variables cannot be
-      changed once the constraint object is created.
-
-      Once initialized the constraint can be incrementally initialized
-      with a list of satisfying tuples. Each tuple specifies a value
-      for each variable in the constraint (in the same ORDER as the
-      variables of the constraint were specified).
-
-    C) Backtracking routine---takes propagator and CSP as arguments
-       so that basic backtracking, forward-checking or GAC can be 
-       executed depending on the propagator used."""
-
 
 class Variable:
-    """Class for defining CSP variables.  On initialization the
-       variable object should be given a name, and optionally a list of
-       domain values. Later on more domain values an be added...but
-       domain values can never be removed.
-
-       The variable object offers two types of functionality to support
-       search.
-       (a) It has a current domain, implemented as a set of flags
-           determining which domain values are "current", i.e., depruned.
-           - you can prune a value, and restore it.
-           - you can obtain a list of values in the current domain, or count
-             how many are still there
-
-       (b) You can assign and unassign a value to the variable.
-           The assigned value must be from the variable domain, and
-           you cannot assign to an already assigned variable.
-
-           You can get the assigned value e.g., to find the solution after
-           search.
-
-           Assignments and current domain interact at the external interface
-           level. Assignments do not affect the internal state of the current domain
-           so as not to interact with value pruning and restoring during search.
-
-           But conceptually when a variable is assigned it only has
-           the assigned value in its current domain (viewing it this
-           way makes implementing the propagators easier). Hence, when
-           the variable is assigned, the 'cur_domain' returns the
-           assigned value as the sole member of the current domain,
-           and 'in_cur_domain' returns True only for the assigned
-           value. However, the internal state of the current domain
-           flags are not changed so that pruning and depruning can
-           work independently of assignment and unassignment."""
-
-    # set up and info methods
-
     def __init__(self, name, domain=None):
-        """Create a variable object, specifying its name (a
-        string). Optionally specify the initial domain."""
         if domain is None:
             domain = []
-        self.name = name  # text name for variable
-        self.dom = list(domain)  # Make a copy of passed domain
-        self.curDomain = [True] * len(domain)  # using list
+        self.name = name
+        self.dom = list(domain)
+        self.curDomain = [True] * len(domain)
         self.assignedValue = None
 
     def add_domain_values(self, values):
-        """Add additional domain values to the domain
-           Removals not supported removals"""
         for val in values:
             self.dom.append(val)
             self.curDomain.append(True)
 
     def domain_size(self):
-        """Return the size of the (permanent) domain"""
+        """Return the size of the domain"""
         return len(self.dom)
 
     def domain(self):
-        """return the variable's (permanent) domain"""
+        """return the variable's domain"""
         return list(self.dom)
 
-    # methods for current domain (pruning and depruning)
-
     def prune_value(self, value):
-        """Remove value from CURRENT domain"""
+        """Remove value from curDomain"""
         self.curDomain[self.value_index(value)] = False
 
     def depruneValue(self, value):
-        """Restore value to CURRENT domain"""
+        """Restore value to curDomain"""
         self.curDomain[self.value_index(value)] = True
 
     def cur_domain(self):
-        """return list of values in CURRENT domain (if assigned
-           only assigned value is viewed as being in current domain)"""
+        """return list of values in curDomain"""
         vals = []
         if self.is_assigned():
             vals.append(self.get_assigned_value())
@@ -119,9 +43,8 @@ class Variable:
         return vals
 
     def in_cur_domain(self, value):
-        """check if value is in CURRENT domain (without constructing list)
-           if assigned only assigned value is viewed as being in current
-           domain"""
+        """check if value is in curDomain, if assigned only assigned
+        value is viewed as being in curDomain"""
         if value not in self.dom:
             return False
         if self.is_assigned():
@@ -130,25 +53,22 @@ class Variable:
             return self.curDomain[self.value_index(value)]
 
     def cur_domain_size(self):
-        """Return the size of the variables domain (without constructing list)"""
+        """Return the size of the variables domain"""
         if self.is_assigned():
             return 1
         else:
             return sum(1 for v in self.curDomain if v)
 
     def restoreCurDomain(self):
-        """return all values back into CURRENT domain"""
+        """return all values back into curDomain"""
         for i in range(len(self.curDomain)):
             self.curDomain[i] = True
 
-    # methods for assigning and unassigning
     def is_assigned(self):
         return self.assignedValue is not None
 
     def assign(self, value):
-        """Used by bt_search. When we assign we remove all other values
-           values from curDomain. We save this information so that we can
-           reverse it on unassign"""
+        """When we assign we remove all other values from curDomain."""
         if self.is_assigned() or not self.in_cur_domain(value):
             print("ERROR: trying to assign variable", self,
                   "that is already assigned or illegal value (not in curdom)")
@@ -157,20 +77,17 @@ class Variable:
         self.assignedValue = value
 
     def unassign(self):
-        """Used by bt_search. Unassign and restore old curDomain"""
+        """Unassign and restore old curDomain"""
         if not self.is_assigned():
             print("ERROR: trying to unassign variable", self, " not yet assigned")
             return
         self.assignedValue = None
 
     def get_assigned_value(self):
-        """return assigned value...returns None if is unassigned"""
         return self.assignedValue
 
-    # internal methods
     def value_index(self, value):
-        """Domain values need not be numbers, so return the index
-           in the domain list of a variable value"""
+        """Return the index in the domain list of a variable value"""
         return self.dom.index(value)
 
     def __repr__(self):
@@ -179,52 +96,21 @@ class Variable:
     def __str__(self):
         return "Var--{}".format(self.name)
 
-    def print_all(self):
-        """Also print the variable domain and current domain"""
-        print("Var--\"{}\": Dom = {}, CurDom = {}".format(self.name,
-                                                          self.dom,
-                                                          self.curDomain))
-
 
 class Constraint:
-    """Class for defining constraints variable objects specifies an
-       ordering over variables.  This ordering is used when calling
-       the satisfied function which tests if an assignment to the
-       variables in the constraint's scope satisfies the constraint"""
-
     def __init__(self, name, scope):
-        """create a constraint object, specify the constraint name (a
-        string) and its scope (an ORDERED list of variable objects).
-        The order of the variables in the scope is critical to the
-        functioning of the constraint.
-
-        Constraints are implemented as storing a set of satisfying
-        tuples (i.e., each tuple specifies a value for each variable
-        in the scope such that this sequence of values satisfies the
-        constraints).
-
-        NOTE: This is a very space expensive representation...a proper
-        constraint object would allow for representing the constraint
-        with a function.
-        """
         self.scope = list(scope)
         self.name = name
         self.sat_tuples = dict()
-
-        # The next object data item 'sup_tuples' will be used to help
-        # support GAC propagation. It allows access to a list of
-        # satisfying tuples that contain a particular variable/value
-        # pair.
         self.sup_tuples = dict()
 
     def add_satisfying_tuples(self, tuples):
         """We specify the constraint by adding its complete list of satisfying tuples."""
         for x in tuples:
-            t = tuple(x)  # ensure we have an immutable tuple
+            t = tuple(x)
             if t not in self.sat_tuples:
                 self.sat_tuples[t] = True
 
-            # now put t in as a support for all of the variable values in it
             for i, val in enumerate(t):
                 var = self.scope[i]
                 if not (var, val) in self.sup_tuples:
@@ -236,12 +122,6 @@ class Constraint:
         return list(self.scope)
 
     def check(self, vals):
-        """Given list of values, one for each variable in the
-           constraints scope, return true if and only if these value
-           assignments satisfy the constraint by applying the
-           constraints "satisfies" function.  Note the list of values
-           are must be ordered in the same order as the list of
-           variables in the constraints scope"""
         return tuple(vals) in self.sat_tuples
 
     def getNumberOfUnassignedVars(self):
@@ -253,8 +133,7 @@ class Constraint:
         return n
 
     def getUnassignedVars(self):
-        """return list of unassigned variables in constraint's scope. Note
-           more expensive to get the list than to then number"""
+        """return list of unassigned variables in constraint's scope."""
         vs = []
         for v in self.scope:
             if not v.is_assigned():
@@ -262,9 +141,6 @@ class Constraint:
         return vs
 
     def has_support(self, var, val):
-        """Test if a variable value pair has a supporting tuple (a set
-           of assignments satisfying the constraint where each value is
-           still in the corresponding variables current domain"""
         if (var, val) in self.sup_tuples:
             for t in self.sup_tuples[(var, val)]:
                 if self.tuple_is_valid(t):
@@ -272,8 +148,7 @@ class Constraint:
         return False
 
     def tuple_is_valid(self, t):
-        """Internal routine. Check if every value in tuple is still in
-           corresponding variable domains"""
+        """Check if every value in tuple is still in corresponding variable domains"""
         for i, var in enumerate(self.scope):
             if not var.in_cur_domain(t[i]):
                 return False
@@ -284,14 +159,7 @@ class Constraint:
 
 
 class CSP:
-    """Class for packing up a set of variables into a CSP problem.
-       Contains various utility routines for accessing the problem.
-       The variables of the CSP can be added later or on initialization.
-       The constraints must be added later"""
-
     def __init__(self, name, variables=None):
-        """create a CSP object. Specify a name (a string) and
-           optionally a set of variables"""
         if variables is None:
             variables = []
         self.name = name
@@ -302,8 +170,6 @@ class CSP:
             self.add_var(v)
 
     def add_var(self, v):
-        """Add variable object to CSP while setting up an index
-           to obtain the constraints over this variable"""
         if not type(v) is Variable:
             print("Trying to add non variable ", v, " to CSP object")
         elif v in self.vars_to_cons:
@@ -313,8 +179,6 @@ class CSP:
             self.vars_to_cons[v] = []
 
     def add_constraint(self, c):
-        """Add constraint to CSP. Note that all variables in the
-           constraints scope must already have been added to the CSP"""
         if not type(c) is Constraint:
             print("Trying to add non constraint ", c, " to CSP object")
         else:
@@ -361,22 +225,12 @@ def restoreValues(prunes):
 
 
 class BT:
-    """use a class to encapsulate things like statistics
-       and bookkeeping for pruning/deprune variable domains
-       To use backtracking routine make one of these objects
-       passing the CSP as a parameter. Then you can invoke
-       that objects's bt_search routine with the right
-       kind or propagator function to obtain plain backtracking
-       forward-checking or gac"""
-
     def __init__(self, csp):
-        """csp == CSP object specifying the CSP to be solved"""
         self.unassignedVars = []
         self.csp = csp
-        self.nDecisions = 0  # nDecisions is the number of variable
+        self.nDecisions = 0
 
-        # assignments made during search
-        self.nPrunes = 0  # nPrunes is the number of value prunes during search
+        self.nPrunes = 0
         self.TRACE = False
         self.runtime = 0
 
@@ -414,9 +268,6 @@ class BT:
     ##################################
 
     def backtrackingSearch(self, propagator):
-        """This is modified from bt_search function.
-        1. Keep assigned value for variables.
-        2. Use bt_recurse_MS instead of bt_recurse"""
         self.clear_stats()
 
         # sTime = time.process_time()
@@ -446,8 +297,7 @@ class BT:
         return self.nDecisions
 
     def backtrackingRecursion(self, propagator, level):
-        """ Return true if found solution. False if still need to search.
-            If top level returns false--> no solution"""
+        """ Return true if found solution. False if still need to search."""
         if self.TRACE:
             print('  ' * level, "bt_recurse level ", level)
 
@@ -488,8 +338,7 @@ class BT:
             return False
 
     def extractVariable(self):
-        """Remove variable from list of unassigned vars. The variable with cur_domain size 1 or
-        it's the only unassigned variable in a constraint."""
+        """Remove variable from list of unassigned vars."""
         for var in self.unassignedVars:
             if var.cur_domain_size() == 1:
                 self.unassignedVars.remove(var)

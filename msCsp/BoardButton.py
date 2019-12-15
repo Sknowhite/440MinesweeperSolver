@@ -1,11 +1,7 @@
 from tkinter import *
 
 
-class FieldButton(Button):
-    """FieldButton Class:
-       This is a class extend Button.
-    """
-
+class BoardButton(Button):
     def __init__(self, x, y, frame, images, value=0):
 
         self.img_blank = images['blank']
@@ -15,8 +11,8 @@ class FieldButton(Button):
         self.img_wrong = images['wrong']
         self.img_no = images['no']
 
-        super(FieldButton, self).__init__(frame, image=self.img_blank)
-
+        super(BoardButton, self).__init__(frame, image=self.img_blank,
+                                          background='#181a19', foreground='#d10232', highlightbackground='#000000')
         self._x = x
         self._y = y
         self._value = value
@@ -28,29 +24,23 @@ class FieldButton(Button):
 
     @property
     def x(self):
-        """Return coordinate x."""
-
         return self._x
 
     @property
     def y(self):
-        """Return coordinate y."""
         return self._y
 
     @property
     def value(self):
-        """Return button value. -1 indicates mine and 0-8 indicate the amount of mines in surrounding buttons."""
         return self._value
 
     @value.setter
     def value(self, value):
-        """Set button value. -1 indicates mine and 0-8 indicate the amount of mines in surrounding buttons."""
         self._value = value
         if self._value == -1:
             self.is_a_mine = True
 
     def flag(self):
-        """Flag button if it's not flagged and not showed; unflag it otherwise."""
         if not self.is_visible:
             if self.is_flagged:
                 self.config(image=self.img_blank)
@@ -59,11 +49,9 @@ class FieldButton(Button):
             self.is_flagged = not self.is_flagged
 
     def is_flag(self):
-        """Return True if button is flagged; False otherwise."""
         return self.is_flagged
 
     def place_mine(self):
-        """Set button to a mine if it's not a mine. Return True if set button successfully; False otherwise."""
         if not self.is_a_mine:
             self._value = -1
             self.is_a_mine = True
@@ -71,11 +59,9 @@ class FieldButton(Button):
         return False
 
     def is_mine(self):
-        """Return true if button it's a mine; false otherwise."""
         return self.is_a_mine
 
     def show(self):
-        """Set button to visible if it's not flagged."""
         if not self.is_visible and not self.is_flagged:
             self.is_visible = True
             if self.is_mine():
@@ -84,11 +70,9 @@ class FieldButton(Button):
                 self.config(image=self.img_no[self._value])
 
     def is_show(self):
-        """Return True if button is visible; False otherwise."""
         return self.is_visible
 
     def reset(self):
-        """Reset button to empty button."""
         self._value = 0
         self.is_a_mine = False
         self.is_visible = False
@@ -96,13 +80,10 @@ class FieldButton(Button):
         self.show_blank()
 
     def show_wrong_flag(self):
-        """Set button to wrong flag."""
         self.config(image=self.img_wrong)
 
     def show_hit_mine(self):
-        """Set button to hit mine."""
         self.config(image=self.img_hit_mine)
 
     def show_blank(self):
-        """Set button to blank."""
         self.config(image=self.img_blank)
