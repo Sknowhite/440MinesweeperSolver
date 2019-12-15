@@ -1,10 +1,8 @@
-from tkinter import *
-from tkinter import messagebox
+import random
+import minesweeper_csp
 from FieldButton import *
 from cspbase import *
 from propagators import *
-import minesweeper_csp
-import random
 
 
 class Minesweeper:

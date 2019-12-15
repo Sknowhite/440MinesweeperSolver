@@ -1,7 +1,6 @@
 import time
-import functools
 
-'''Constraint Satisfaction Routines
+"""Constraint Satisfaction Routines
    A) class Variable
 
       This class allows one to define CSP variables.
@@ -34,7 +33,7 @@ import functools
        so that basic backtracking, forward-checking or GAC can be 
        executed depending on the propagator used.
 
-'''
+"""
 
 
 class Variable:
