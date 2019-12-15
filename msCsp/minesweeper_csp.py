@@ -1,5 +1,5 @@
-from cspbase import *
 import itertools
+from cspbase import *
 
 
 def csp_model(minesweeper):
