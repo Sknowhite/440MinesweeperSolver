@@ -16,5 +16,7 @@ cd /pathToRepo/msCsp
 
 python3 minesweeper.py
   
+NOTES:
+  has different propagators to use and test with such as plain Backtracking, Forward checking and GAC
   
   
