@@ -2,10 +2,8 @@ import itertools
 from cspbase import *
 
 
-def csp_model(minesweeper):
-    """Initialize a csp model.
-    """
-
+def cspModel(minesweeper):
+    """Initialize a csp model."""
     csp = CSP("Minesweeper")
 
     # list of lists, same structure as board in minesweeper
@@ -102,9 +100,9 @@ def csp_model(minesweeper):
                 con2_sum = con2[2]
                 name = ""
 
-                if not ol_vars in ol_set:
-                    for i in ol_vars:
-                        name += i.name + ", "
+                if ol_vars not in ol_set:
+                    for k in ol_vars:
+                        name += k.name + ", "
                     name = "(" + name + ")"
                     var = Variable(name, list(range(len(ol_vars) + 1)))
                     csp.add_var(var)
@@ -124,17 +122,14 @@ def csp_model(minesweeper):
     # Create Constraint object for constraint in cons list.
     for con in cons:
         constraint = Constraint(con[0], con[1])
-        tuples = satisfy_tuples(con[1], con[2])
+        tuples = satisfyTuples(con[1], con[2])
         constraint.add_satisfying_tuples(tuples)
         csp.add_constraint(constraint)
 
     return csp
 
 
-def satisfy_tuples(scope, sum1):
-    """
-    """
-
+def satisfyTuples(scope, sum1):
     product_list = []
     for var in scope:
         product_list.append(var.domain())

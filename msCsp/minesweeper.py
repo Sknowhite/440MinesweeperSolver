@@ -17,9 +17,7 @@ class Minesweeper:
          [  ] ]
 
         such that board[i][i] is the FieldButton (object) that built to represent
-        the button in cell i,j of the game board. (by default indexed from (0,0) to (10,10))
-
-    """
+        the button in cell i,j of the game board. (by default indexed from (0,0) to (10,10))"""
 
     def __init__(self, master):
 
@@ -44,7 +42,7 @@ class Minesweeper:
         self.first_click = True
         self.first_click_button = None
 
-        # Initialize images for newgame button.
+        # Initialize images for newGame button.
         self.img_sun_normal = PhotoImage(file="images/img_sun_normal.gif")
         self.img_sun_normal_press = PhotoImage(file="images/img_sun_normal_press.gif")
         self.img_sun_move = PhotoImage(file="images/img_sun_move.gif")
@@ -68,39 +66,34 @@ class Minesweeper:
         else:
             self.import_board(board)
 
-        # Initialize newgame button.
-        self.newgame_button = Button(self.frame, image=self.img_sun_normal)
-        self.newgame_button.grid(row=0, column=0, columnspan=self.col_size)
-        self.newgame_button.bind("<Button-1>", lambda Button: self.newgame())
+        # Initialize newGame button.
+        self.newGameButton = Button(self.frame, image=self.img_sun_normal)
+        self.newGameButton.grid(row=0, column=0, columnspan=self.col_size)
+        self.newGameButton.bind("<Button-1>", lambda Button: self.newGame())
 
         # Initialize remaining mines labels.
-        self.remain_label = Label(self.frame, text="remainng mines: ")
+        self.remain_label = Label(self.frame, text="remaining mines: ")
         self.remain_label.grid(row=self.row_size + 1, column=0, columnspan=4, sticky=W)
         self.remain_label2 = Label(self.frame, text=self.mines_amount)
         self.remain_label2.grid(row=self.row_size + 1, column=4, columnspan=self.row_size, sticky=W)
 
         # Initialize solve by step button.
-        self.solvecomp_button = Button(self.frame, text="Solve by Step")
-        self.solvecomp_button.grid(row=self.row_size + 2, column=0, columnspan=self.col_size, sticky=E)
-        self.solvecomp_button.bind("<Button-1>", lambda Button: self.solve_step())
+        self.solveButton = Button(self.frame, text="Solve by Step")
+        self.solveButton.grid(row=self.row_size + 2, column=0, columnspan=self.col_size, sticky=E)
+        self.solveButton.bind("<Button-1>", lambda Button: self.solve_step())
 
         # Initialize solve complete button.
-        self.solvecomp_button = Button(self.frame, text="Solve Complete")
-        self.solvecomp_button.grid(row=self.row_size + 2, column=0, columnspan=self.col_size, sticky=W)
-        self.solvecomp_button.bind("<Button-1>", lambda Button: self.solve_complete())
+        self.solveButton = Button(self.frame, text="Solve Complete")
+        self.solveButton.grid(row=self.row_size + 2, column=0, columnspan=self.col_size, sticky=W)
+        self.solveButton.bind("<Button-1>", lambda Button: self.solve_complete())
 
         # Initialize test solve complete button.
-        self.solvecomp_button = Button(self.frame, text="Solve Complete x times")
-        self.solvecomp_button.grid(row=self.row_size + 3, column=0, columnspan=self.col_size, sticky=W)
-        self.solvecomp_button.bind("<Button-1>", lambda Button: self.solve_complete_multiple(1000))
+        self.solveButton = Button(self.frame, text="Solve Complete x times")
+        self.solveButton.grid(row=self.row_size + 3, column=0, columnspan=self.col_size, sticky=W)
+        self.solveButton.bind("<Button-1>", lambda Button: self.solve_complete_multiple(1000))
 
-    def newgame(self):
-        """Initialize all attributes for new game.
-
-        :param row_size: int
-        :param col_size: int
-        :param mines_amount: int
-        """
+    def newGame(self):
+        """Initialize all attributes for new game."""
         self.game_times += 1
         self.first_click = True
         self.first_click_button = None
@@ -112,21 +105,18 @@ class Minesweeper:
         # Reset all buttons.
         for button in self.buttons:
             button.reset()
-            button.bind('<Button-1>', self.lclicked_wrapper(button))
-            button.bind('<Button-3>', self.rclicked_wrapper(button))
+            button.bind('<Button-1>', self.lmbWrapper(button))
+            button.bind('<Button-3>', self.rmbWrapper(button))
 
-        # Reset remaining mines label and newgame button.
+        # Reset remaining mines label and newGame button.
         self.remain_label2.config(text=self.remaining_mines)
-        self.newgame_button.config(image=self.img_sun_normal)
+        self.newGameButton.config(image=self.img_sun_normal)
 
     def init_board(self):
         """Initialize game board with buttons.
         The board is a list of lists, inner lists' elements are FieldButton object.
-        [ [ ],
-          [ ],
-          ...]
-        """
-
+        [[ ],
+        [ ]]"""
         for row in range(self.row_size):
             lis = []
             for col in range(self.col_size):
@@ -140,8 +130,8 @@ class Minesweeper:
 
         # Bind LMB and RMB actions to button.
         for button in self.buttons:
-            button.bind('<Button-1>', self.lclicked_wrapper(button))
-            button.bind('<Button-3>', self.rclicked_wrapper(button))
+            button.bind('<Button-1>', self.lmbWrapper(button))
+            button.bind('<Button-3>', self.rmbWrapper(button))
 
     def init_random_mines(self):
         """Initialize mines randomly."""
@@ -169,13 +159,7 @@ class Minesweeper:
                 mines -= 1
 
     def get_surrounding_buttons(self, row, col):
-        """Return a list of surrounding buttons of button at row and col in board.
-
-        :param row: int
-        :param col: int
-        :return: list of buttons
-        """
-
+        """Return a list of surrounding buttons of button at row and col in board."""
         SURROUNDING = ((-1, -1), (-1, 0), (-1, 1),
                        (0, -1), (0, 1),
                        (1, -1), (1, 0), (1, 1))
@@ -191,26 +175,20 @@ class Minesweeper:
         return neighbours
 
     def update_surrounding_buttons(self, row, col, value):
-        """Update surrounding buttons' value adding given value.
-
-        :param row: int
-        :param col: int
-        """
-
+        """Update surrounding buttons' value adding given value."""
         cells = self.get_surrounding_buttons(row, col)
         for cell in cells:
             if not cell.is_mine():
                 cell.value += value
 
-    def lclicked_wrapper(self, button):
-        return lambda Button: self.lclicked(button)
+    def lmbWrapper(self, button):
+        return lambda Button: self.lmbClicked(button)
 
-    def rclicked_wrapper(self, button):
-        return lambda Button: self.rclicked(button)
+    def rmbWrapper(self, button):
+        return lambda Button: self.rmbClicked(button)
 
-    def lclicked(self, button):
-        """Left click action on given button.
-        """
+    def lmbClicked(self, button):
+        """Left click action on given button."""
         if self.first_click:
             self.first_click_button = button
             self.init_random_mines()
@@ -226,8 +204,8 @@ class Minesweeper:
         # Case1: hits a mine, game over.
         if button.is_mine():
             button.show_hit_mine()
-            self.newgame_button.config(image=self.img_sun_lose)
-            self.gameover()
+            self.newGameButton.config(image=self.img_sun_lose)
+            self.gameOver()
 
         # Case2: hits an empty button, keep showing surrounding buttons until all not empty.
         elif button.value == 0:
@@ -242,11 +220,10 @@ class Minesweeper:
 
         # Check whether the game wins or not.
         if self.is_win():
-            self.gameover()
+            self.gameOver()
 
-    def rclicked(self, button):
-        """Right click action on given button.
-        """
+    def rmbClicked(self, button):
+        """Right click action on given button."""
 
         # Do nothing if it's visible.
         if button.is_show():
@@ -265,12 +242,10 @@ class Minesweeper:
         self.remain_label2.config(text=self.remaining_mines)
 
         if self.is_win():
-            self.gameover()
+            self.gameOver()
 
-    def gameover(self):
-        """Disable all buttons and show all mines.
-        """
-
+    def gameOver(self):
+        """Disable all buttons and show all mines."""
         self.is_over = True
         for button in self.buttons:
             if button.is_mine():
@@ -284,20 +259,15 @@ class Minesweeper:
 
     def is_win(self):
         """Return True if game wins; False otherwise. The game wins if all buttons are either visible or flagged, and
-        the amount of flags equals the amount of mines.
-
-        :return: bool
-        """
-
+        the amount of flags equals the amount of mines."""
         for button in self.buttons:
             if not button.is_show() and not button.is_mine():
                 return False
-        self.newgame_button.config(image=self.img_sun_win)
+        self.newGameButton.config(image=self.img_sun_win)
         return True
 
     def solve_complete(self):
-        """Solve current game completely.
-        """
+        """Solve current game completely."""
         if self.is_over:
             return
 
@@ -306,14 +276,13 @@ class Minesweeper:
             if button.is_flag():
                 button.flag()
                 self.flags -= 1
-        count = 0
         while not self.is_over:
             assigned = self.solve_step()
 
             # No variable assigned by CSP.
             if not assigned:
                 choose_button = self.guess_move()
-                self.lclicked(choose_button)
+                self.lmbClicked(choose_button)
 
     def solve_complete_multiple(self, times):
         self.win_times = 0
@@ -324,7 +293,7 @@ class Minesweeper:
             self.solve_complete()
             if self.is_win():
                 self.win_times += 1
-            self.newgame()
+            self.newGame()
             if (i + 1) % 100 == 0:
                 print("solved: " + str(i + 1) + " times")
 
@@ -336,11 +305,7 @@ class Minesweeper:
         self.game_times = 0
 
     def guess_move(self):
-        """Return an unclick button.
-
-        :return: button
-        """
-
+        """Return an unclick button."""
         buttons = []
         corners = [self.board[0][0], self.board[0][self.col_size - 1], self.board[self.row_size - 1][0],
                    self.board[self.row_size - 1][self.col_size - 1]]
@@ -356,19 +321,16 @@ class Minesweeper:
 
     def solve_step(self):
         """Solve parts of the game bases on current board's information by using CSP.
-        Return the number of variables made.
-
-        :return: Return int
-        """
-
+        Return the number of variables made."""
         is_assigned = False
 
-        csp = minesweeper_csp.csp_model(self)
+        csp = minesweeper_csp.cspModel(self)
 
         solver = BT(csp)
-        solver.bt_search_MS(prop_GAC)
+        solver.backtrackingSearch(prop_BT)
         for var in csp.get_all_vars():
 
+            # noinspection PyBroadException
             try:
                 cell = var.name.split()
                 row = int(cell[0])
@@ -380,19 +342,17 @@ class Minesweeper:
 
             if var.get_assigned_value() == 1:
                 if not self.board[row][col].is_flag():
-                    self.rclicked(self.board[row][col])
+                    self.rmbClicked(self.board[row][col])
                     is_assigned = True
             elif var.get_assigned_value() == 0:
                 if not self.board[row][col].is_show():
-                    self.lclicked(self.board[row][col])
+                    self.lmbClicked(self.board[row][col])
                     is_assigned = True
 
         return is_assigned
 
     def import_board(self, board):
-        """Import game from a list of lists with numbers.
-        """
-
+        """Import game from a list of lists with numbers."""
         self.row_size = len(board)
         self.col_size = len(board[0])
 
@@ -413,8 +373,8 @@ class Minesweeper:
 
                 # first row grid for new game button
                 button.grid(row=row + 1, column=col)
-                button.bind('<Button-1>', self.lclicked_wrapper(button))
-                button.bind('<Button-3>', self.rclicked_wrapper(button))
+                button.bind('<Button-1>', self.lmbWrapper(button))
+                button.bind('<Button-3>', self.rmbWrapper(button))
                 lis.append(button)
                 self.buttons.append(button)
             self.board.append(lis)
@@ -422,45 +382,25 @@ class Minesweeper:
         self.remaining_mines = self.mines_amount
 
 
-def setup_menu(root, minesweeper):
-    """
-    :param root:
-    :param minesweeper:
-    :return:
-    """
-
+def setupMenu(root, minesweeper):
     menubar = Menu(root)
 
-    filemenu = Menu(menubar, tearoff=0)
-    filemenu.add_command(label="New Game", command=minesweeper.newgame)
-    filemenu.add_separator()
-    filemenu.add_command(label="Exit", command=root.quit)
-    menubar.add_cascade(label="File", menu=filemenu)
+    fileMenu = Menu(menubar, tearoff=0)
+    fileMenu.add_command(label="New Game", command=minesweeper.newGame)
+    fileMenu.add_separator()
+    fileMenu.add_command(label="Exit", command=root.quit)
+    menubar.add_cascade(label="File", menu=fileMenu)
 
     root.config(menu=menubar)
 
 
 def main():
-    global root
     root = Tk()
     root.title("Minesweeper")
     minesweeper = Minesweeper(root)
-    setup_menu(root, minesweeper)
+    setupMenu(root, minesweeper)
     root.mainloop()
 
-
-boards = [[[2, -1, -1],
-           [-1, 4, 2],
-           [-1, 2, 0],
-           [2, 2, 0],
-           [-1, 1, 0],
-           [1, 1, 0]],
-          [[0, 0, -1, 0, -1],
-           [-1, 2, 1, 3, 0],
-           [0, 2, 1, 2, 0 - 1],
-           [-1, 0, 1, -1, 0],
-           [0, 1, 1, 1, 1]]
-          ]
 
 board = []
 

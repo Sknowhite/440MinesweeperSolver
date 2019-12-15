@@ -22,7 +22,7 @@
            prior to any variables being assigned. SEE BELOW
 
        The propagator returns True/False and a list of (Variable, Value) pairs.
-       Return is False if a deadend has been detected by the propagator.
+       Return is False if a deadEnd has been detected by the propagator.
        in this case bt_search will backtrack
        return is true if we can continue.
 
@@ -55,19 +55,16 @@
          for forward checking we forward check all constraints with V
          that have one unassigned variable left
 
-         for gac we initialize the GAC queue with all constraints containing V.
-
-   """
+         for gac we initialize the GAC queue with all constraints containing V."""
 
 
 def prop_BT(csp, newVar=None):
     """Do plain backtracking propagation. That is, do no
     propagation at all. Just check fully instantiated constraints"""
-
     if not newVar:
         return True, []
     for c in csp.get_cons_with_var(newVar):
-        if c.get_n_unasgn() == 0:
+        if c.getNumberOfUnassignedVars() == 0:
             vals = []
             vars = c.get_scope()
             for var in vars:
@@ -81,10 +78,8 @@ def prop_FC(csp, newVar=None):
     """Do forward checking. That is check constraints with
        only one uninstantiated variable. Remember to keep
        track of all pruned variable,value pairs and return """
-    # IMPLEMENT
-
     pruned = []
-    isDeadend = False
+    isDeadEnd = False
 
     if not newVar:
         cons = csp.get_all_cons()
@@ -94,33 +89,32 @@ def prop_FC(csp, newVar=None):
                 result = FCCheck(con, scope[0])
                 pruned.extend(result[1])
                 if not result[0]:
-                    isDeadend = True
+                    isDeadEnd = True
                     break
 
     cons = csp.get_all_cons()
     for con in cons:
         scope = con.get_scope()
-        if con.get_n_unasgn() == 1:
-            result = FCCheck(con, con.get_unasgn_vars()[0])
+        if con.getNumberOfUnassignedVars() == 1:
+            result = FCCheck(con, con.getUnassignedVars()[0])
             pruned.extend(result[1])
             if not result[0]:
-                isDeadend = True
+                isDeadEnd = True
                 break
-    if isDeadend:
+    if isDeadEnd:
         return False, pruned
     return True, pruned
 
 
 def FCCheck(C, x):
-    """
-    (Constraint, Variable) -> (Bool, list of tuple(Variable, Value))
+    """(Constraint, Variable) -> (Bool, list of tuple(Variable, Value))
 
     Given a constraint C and a variable x, return True if the current domain
     size of x is not zero; False otherwise. Also return a list of (var, val)
-    tuples that pruned.
-    """
+    tuples that pruned."""
     pruned = []
     cur_dom = x.cur_domain()
+
     for val in cur_dom:
         if not C.has_support(x, val):
             x.prune_value(val)
@@ -135,8 +129,6 @@ def prop_GAC(csp, newVar=None):
     """Do GAC propagation. If newVar is None we do initial GAC enforce
        processing all constraints. Otherwise we do GAC enforce with
        constraints containing newVar on GAC Queue"""
-    # IMPLEMENT
-
     queue = []
     pruned = []
     cons = csp.get_all_cons()
