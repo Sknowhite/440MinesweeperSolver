@@ -56,34 +56,31 @@ class Minesweeper:
 
         # Initialize newGame button.
         self.newGameButton = Button(self.frame, image=self.sumWNormal,
-                                    background='#181a19', foreground='#d10232', highlightbackground='#000000')
+                                    background='#181a19', foreground='#d10232', highlightbackground='#000000',
+                                    activebackground='#d10232', activeforeground='#181a19')
         self.newGameButton.grid(row=0, column=0, columnspan=self.col_size)
         self.newGameButton.bind("<Button-1>", lambda Button: self.newGame())
 
         # Initialize remaining mines labels.
         self.remain_label = Label(self.frame, text="remaining mines: ",
                                   background='#181a19', foreground='#d10232', highlightbackground='#000000')
-        self.remain_label.grid(row=self.row_size + 1, column=0, columnspan=4, sticky=W)
+        self.remain_label.grid(row=self.row_size + 2, column=4, columnspan=5, sticky=E)
         self.remain_label2 = Label(self.frame, text=self.mines_amount,
                                    background='#181a19', foreground='#d10232', highlightbackground='#000000')
-        self.remain_label2.grid(row=self.row_size + 1, column=4, columnspan=self.row_size, sticky=W)
-
-        # Initialize solve by step button.
-        self.solveButton = Button(self.frame, text="Solve by Step",
-                                  background='#181a19', foreground='#d10232', highlightbackground='#000000')
-        self.solveButton.grid(row=self.row_size + 2, column=0, columnspan=self.col_size, sticky=E)
-        self.solveButton.bind("<Button-1>", lambda Button: self.solve_step())
+        self.remain_label2.grid(row=self.row_size + 2, column=9, columnspan=1, sticky=W)
 
         # Initialize solve complete button.
         self.solveButton = Button(self.frame, text="Solve Complete",
-                                  background='#181a19', foreground='#d10232', highlightbackground='#000000')
-        self.solveButton.grid(row=self.row_size + 2, column=0, columnspan=self.col_size, sticky=W)
+                                  background='#181a19', foreground='#d10232', highlightbackground='#000000',
+                                  activebackground='#d10232', activeforeground='#181a19')
+        self.solveButton.grid(row=self.row_size + 2, column=0, columnspan=5, sticky=W)
         self.solveButton.bind("<Button-1>", lambda Button: self.solve_complete())
 
         # Initialize test solve complete button.
         self.solveButton = Button(self.frame, text="Solve Complete x times",
-                                  background='#181a19', foreground='#d10232', highlightbackground='#000000')
-        self.solveButton.grid(row=self.row_size + 3, column=0, columnspan=self.col_size, sticky=W)
+                                  background='#181a19', foreground='#d10232', highlightbackground='#000000',
+                                  activebackground='#d10232', activeforeground='#181a19')
+        self.solveButton.grid(row=self.row_size + 3, column=0, columnspan=6, sticky=W)
         self.solveButton.bind("<Button-1>", lambda Button: self.solve_complete_multiple(1000))
 
     def newGame(self):
@@ -114,7 +111,7 @@ class Minesweeper:
             lis = []
             for col in range(self.col_size):
                 button = BoardButton(row, col, self.frame, self.images)
-                button.grid(row=row + 1, column=col)
+                button.grid(row=row + 1, column=col, sticky=W)
                 lis.append(button)
                 self.buttons.append(button)
             self.board.append(lis)
@@ -303,7 +300,7 @@ class Minesweeper:
 
         solver = BT(csp)
         solver.backtrackingSearch(prop_BT)
-        for var in csp.get_all_vars():
+        for var in csp.getAllVariables():
             try:
                 cell = var.name.split()
                 row = int(cell[0])
@@ -311,11 +308,11 @@ class Minesweeper:
             except:
                 continue
 
-            if var.get_assigned_value() == 1:
+            if var.getAssignedValue() == 1:
                 if not self.board[row][col].is_flag():
                     self.rmbClicked(self.board[row][col])
                     is_assigned = True
-            elif var.get_assigned_value() == 0:
+            elif var.getAssignedValue() == 0:
                 if not self.board[row][col].is_show():
                     self.lmbClicked(self.board[row][col])
                     is_assigned = True
@@ -354,9 +351,11 @@ class Minesweeper:
 
 
 def setupMenu(root, minesweeper):
-    menubar = Menu(root)
+    menubar = Menu(root, background='#181a19', foreground='#d10232', borderwidth=0,
+                   activebackground='#d10232', activeforeground='#181a19')
 
-    fileMenu = Menu(menubar, tearoff=0)
+    fileMenu = Menu(menubar, tearoff=0, background='#181a19', foreground='#d10232',
+                    activebackground='#d10232', activeforeground='#181a19')
     fileMenu.add_command(label="New Game", command=minesweeper.newGame)
     fileMenu.add_separator()
     fileMenu.add_command(label="Exit", command=root.quit)

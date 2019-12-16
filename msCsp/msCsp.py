@@ -22,7 +22,7 @@ def cspModel(minesweeper):
                 domain = [0, 1]
             var = Variable(name, domain)
             temp_row.append(var)
-            csp.add_var(var)
+            csp.addVariable(var)
         variables.append(temp_row)
 
     # Initialize all constraints.
@@ -105,7 +105,7 @@ def cspModel(minesweeper):
                         name += k.name + ", "
                     name = "(" + name + ")"
                     var = Variable(name, list(range(len(ol_vars) + 1)))
-                    csp.add_var(var)
+                    csp.addVariable(var)
                     ol_var.append(var)
                     ol_set.append(ol_vars)
                 else:
@@ -123,8 +123,8 @@ def cspModel(minesweeper):
     for con in cons:
         constraint = Constraint(con[0], con[1])
         tuples = satisfyTuples(con[1], con[2])
-        constraint.add_satisfying_tuples(tuples)
-        csp.add_constraint(constraint)
+        constraint.addSatisfyingTuples(tuples)
+        csp.addConstraint(constraint)
 
     return csp
 

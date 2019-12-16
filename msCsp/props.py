@@ -2,12 +2,12 @@
 def prop_BT(csp, newVar=None):  # BACKTRACKING PROPAGATOR
     if not newVar:
         return True, []
-    for c in csp.get_cons_with_var(newVar):
+    for c in csp.getConstraintsWithVariables(newVar):
         if c.getNumberOfUnassignedVars() == 0:
             vals = []
-            vars = c.get_scope()
+            vars = c.getScope()
             for var in vars:
-                vals.append(var.get_assigned_value())
+                vals.append(var.getAssignedValue())
             if not c.check(vals):
                 return False, []
     return True, []
@@ -18,9 +18,9 @@ def prop_FC(csp, newVar=None):  # FORWARD CHECKING PROPAGATOR
     isDeadEnd = False
 
     if not newVar:
-        cons = csp.get_all_cons()
+        cons = csp.getAllConstraints()
         for con in cons:
-            scope = con.get_scope()
+            scope = con.getScope()
             if len(scope) == 1:
                 result = FCCheck(con, scope[0])
                 pruned.extend(result[1])
@@ -28,9 +28,9 @@ def prop_FC(csp, newVar=None):  # FORWARD CHECKING PROPAGATOR
                     isDeadEnd = True
                     break
 
-    cons = csp.get_all_cons()
+    cons = csp.getAllConstraints()
     for con in cons:
-        scope = con.get_scope()
+        scope = con.getScope()
         if con.getNumberOfUnassignedVars() == 1:
             result = FCCheck(con, con.getUnassignedVars()[0])
             pruned.extend(result[1])
@@ -44,14 +44,14 @@ def prop_FC(csp, newVar=None):  # FORWARD CHECKING PROPAGATOR
 
 def FCCheck(C, x):  # FORWARD CHECKING ALGORITHM
     pruned = []
-    cur_dom = x.cur_domain()
+    cur_dom = x.getCurDomain()
 
     for val in cur_dom:
-        if not C.has_support(x, val):
-            x.prune_value(val)
+        if not C.hasSupport(x, val):
+            x.pruneValue(val)
             pruned.append((x, val))
 
-    if not x.cur_domain_size():
+    if not x.getCurDomainSize():
         return False, pruned
     return True, pruned
 
@@ -59,36 +59,36 @@ def FCCheck(C, x):  # FORWARD CHECKING ALGORITHM
 def prop_GAC(csp, newVar=None):  # GENERALIZED ARC CONSISTENCY PROPAGATOR
     queue = []
     pruned = []
-    cons = csp.get_all_cons()
+    cons = csp.getAllConstraints()
 
     if not newVar:
         queue = cons.copy()
     else:
-        queue = csp.get_cons_with_var(newVar).copy()
+        queue = csp.getConstraintsWithVariables(newVar).copy()
 
     count = 0
     while count < len(queue):
 
         con = queue[count]
-        scope = con.get_scope()
+        scope = con.getScope()
 
         for i in range(len(scope)):
             var = scope[i]
-            curDomain = var.cur_domain()
+            curDomain = var.getCurDomain()
             found = False
             for val in curDomain:
-                if con.has_support(var, val):
+                if con.hasSupport(var, val):
                     continue
                 else:
                     found = True
-                    var.prune_value(val)
+                    var.pruneValue(val)
                     pruned.append((var, val))
-                    if not var.cur_domain_size():
+                    if not var.getCurDomainSize():
                         queue = []
                         return False, pruned
 
             if found:
-                cons = csp.get_cons_with_var(var)
+                cons = csp.getConstraintsWithVariables(var)
                 for c in cons:
                     if c not in queue[count:]:
                         queue.append(c)

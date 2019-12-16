@@ -10,12 +10,12 @@ class Variable:
         self.curDomain = [True] * len(domain)
         self.assignedValue = None
 
-    def add_domain_values(self, values):
+    def addDomainValues(self, values):
         for val in values:
             self.dom.append(val)
             self.curDomain.append(True)
 
-    def domain_size(self):
+    def getDomainSize(self):
         """Return the size of the domain"""
         return len(self.dom)
 
@@ -23,38 +23,38 @@ class Variable:
         """return the variable's domain"""
         return list(self.dom)
 
-    def prune_value(self, value):
+    def pruneValue(self, value):
         """Remove value from curDomain"""
-        self.curDomain[self.value_index(value)] = False
+        self.curDomain[self.getValueIndex(value)] = False
 
     def depruneValue(self, value):
         """Restore value to curDomain"""
-        self.curDomain[self.value_index(value)] = True
+        self.curDomain[self.getValueIndex(value)] = True
 
-    def cur_domain(self):
+    def getCurDomain(self):
         """return list of values in curDomain"""
         vals = []
-        if self.is_assigned():
-            vals.append(self.get_assigned_value())
+        if self.isAssigned():
+            vals.append(self.getAssignedValue())
         else:
             for i, val in enumerate(self.dom):
                 if self.curDomain[i]:
                     vals.append(val)
         return vals
 
-    def in_cur_domain(self, value):
+    def isInCurDomain(self, value):
         """check if value is in curDomain, if assigned only assigned
         value is viewed as being in curDomain"""
         if value not in self.dom:
             return False
-        if self.is_assigned():
-            return value == self.get_assigned_value()
+        if self.isAssigned():
+            return value == self.getAssignedValue()
         else:
-            return self.curDomain[self.value_index(value)]
+            return self.curDomain[self.getValueIndex(value)]
 
-    def cur_domain_size(self):
+    def getCurDomainSize(self):
         """Return the size of the variables domain"""
-        if self.is_assigned():
+        if self.isAssigned():
             return 1
         else:
             return sum(1 for v in self.curDomain if v)
@@ -64,12 +64,12 @@ class Variable:
         for i in range(len(self.curDomain)):
             self.curDomain[i] = True
 
-    def is_assigned(self):
+    def isAssigned(self):
         return self.assignedValue is not None
 
     def assign(self, value):
         """When we assign we remove all other values from curDomain."""
-        if self.is_assigned() or not self.in_cur_domain(value):
+        if self.isAssigned() or not self.isInCurDomain(value):
             print("ERROR: trying to assign variable", self,
                   "that is already assigned or illegal value (not in curdom)")
             return
@@ -78,15 +78,15 @@ class Variable:
 
     def unassign(self):
         """Unassign and restore old curDomain"""
-        if not self.is_assigned():
+        if not self.isAssigned():
             print("ERROR: trying to unassign variable", self, " not yet assigned")
             return
         self.assignedValue = None
 
-    def get_assigned_value(self):
+    def getAssignedValue(self):
         return self.assignedValue
 
-    def value_index(self, value):
+    def getValueIndex(self, value):
         """Return the index in the domain list of a variable value"""
         return self.dom.index(value)
 
@@ -104,7 +104,7 @@ class Constraint:
         self.sat_tuples = dict()
         self.sup_tuples = dict()
 
-    def add_satisfying_tuples(self, tuples):
+    def addSatisfyingTuples(self, tuples):
         """We specify the constraint by adding its complete list of satisfying tuples."""
         for x in tuples:
             t = tuple(x)
@@ -117,7 +117,7 @@ class Constraint:
                     self.sup_tuples[(var, val)] = []
                 self.sup_tuples[(var, val)].append(t)
 
-    def get_scope(self):
+    def getScope(self):
         """get list of variables the constraint is over"""
         return list(self.scope)
 
@@ -128,7 +128,7 @@ class Constraint:
         """return the number of unassigned variables in the constraint's scope"""
         n = 0
         for v in self.scope:
-            if not v.is_assigned():
+            if not v.isAssigned():
                 n = n + 1
         return n
 
@@ -136,21 +136,21 @@ class Constraint:
         """return list of unassigned variables in constraint's scope."""
         vs = []
         for v in self.scope:
-            if not v.is_assigned():
+            if not v.isAssigned():
                 vs.append(v)
         return vs
 
-    def has_support(self, var, val):
+    def hasSupport(self, var, val):
         if (var, val) in self.sup_tuples:
             for t in self.sup_tuples[(var, val)]:
-                if self.tuple_is_valid(t):
+                if self.tupleIsValid(t):
                     return True
         return False
 
-    def tuple_is_valid(self, t):
+    def tupleIsValid(self, t):
         """Check if every value in tuple is still in corresponding variable domains"""
         for i, var in enumerate(self.scope):
-            if not var.in_cur_domain(t[i]):
+            if not var.isInCurDomain(t[i]):
                 return False
         return True
 
@@ -167,9 +167,9 @@ class CSP:
         self.cons = []
         self.vars_to_cons = dict()
         for v in variables:
-            self.add_var(v)
+            self.addVariable(v)
 
-    def add_var(self, v):
+    def addVariable(self, v):
         if not type(v) is Variable:
             print("Trying to add non variable ", v, " to CSP object")
         elif v in self.vars_to_cons:
@@ -178,7 +178,7 @@ class CSP:
             self.vars.append(v)
             self.vars_to_cons[v] = []
 
-    def add_constraint(self, c):
+    def addConstraint(self, c):
         if not type(c) is Constraint:
             print("Trying to add non constraint ", c, " to CSP object")
         else:
@@ -189,19 +189,19 @@ class CSP:
                 self.vars_to_cons[v].append(c)
             self.cons.append(c)
 
-    def get_all_cons(self):
+    def getAllConstraints(self):
         """return list of all constraints in the CSP"""
         return self.cons
 
-    def get_cons_with_var(self, var):
+    def getConstraintsWithVariables(self, var):
         """return list of constraints that include var in their scope"""
         return list(self.vars_to_cons[var])
 
-    def get_all_vars(self):
+    def getAllVariables(self):
         """return list of variables in the CSP"""
         return list(self.vars)
 
-    def print_all(self):
+    def printAll(self):
         print("CSP", self.name)
         print("   Variables = ", self.vars)
         print("   Constraints = ", self.cons)
@@ -209,7 +209,7 @@ class CSP:
     def printSolution(self):
         print("CSP", self.name, " Assignments = ")
         for v in self.vars:
-            print(v, " = ", v.get_assigned_value(), "    ", end='')
+            print(v, " = ", v.getAssignedValue(), "    ", end='')
         print("")
 
 
@@ -234,28 +234,28 @@ class BT:
         self.TRACE = False
         self.runtime = 0
 
-    def trace_on(self):
+    def traceOn(self):
         """Turn search trace on"""
         self.TRACE = True
 
-    def trace_off(self):
+    def traceOff(self):
         """Turn search trace off"""
         self.TRACE = False
 
-    def clear_stats(self):
+    def clearStatistics(self):
         """Initialize counters"""
         self.nDecisions = 0
         self.nPrunes = 0
         self.runtime = 0
 
-    def print_stats(self):
+    def printStatistics(self):
         print("Search made {} variable assignments and pruned {} variable values".format(
             self.nDecisions, self.nPrunes))
 
-    def restore_all_variable_domains(self):
+    def restoreAllVariableDomains(self):
         """Reinitialize all variable domains"""
         for var in self.csp.vars:
-            if var.is_assigned():
+            if var.isAssigned():
                 var.unassign()
             var.restoreCurDomain()
 
@@ -268,12 +268,12 @@ class BT:
     ##################################
 
     def backtrackingSearch(self, propagator):
-        self.clear_stats()
+        self.clearStatistics()
 
         # sTime = time.process_time()
 
         for v in self.csp.vars:
-            if not v.is_assigned():
+            if not v.isAssigned():
                 self.unassignedVars.append(v)
 
         status, prunes = propagator(self.csp)  # initial propagate no assigned variables.
@@ -310,7 +310,7 @@ class BT:
             if self.TRACE:
                 print('  ' * level, "bt_recurse var = ", var)
 
-            for val in var.cur_domain():
+            for val in var.getCurDomain():
 
                 if self.TRACE:
                     print('  ' * level, "bt_recurse trying", var, "=", val)
@@ -340,11 +340,11 @@ class BT:
     def extractVariable(self):
         """Remove variable from list of unassigned vars."""
         for var in self.unassignedVars:
-            if var.cur_domain_size() == 1:
+            if var.getCurDomainSize() == 1:
                 self.unassignedVars.remove(var)
                 return var
 
-        for con in self.csp.get_all_cons():
+        for con in self.csp.getAllConstraints():
             if con.getNumberOfUnassignedVars() == 0:
                 continue
             if con.getNumberOfUnassignedVars() == 1:
