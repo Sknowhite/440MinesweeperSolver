@@ -12,7 +12,8 @@ class BoardButton(Button):
         self.img_no = images['no']
 
         super(BoardButton, self).__init__(frame, image=self.img_blank,
-                                          background='#181a19', foreground='#d10232', highlightbackground='#000000')
+                                          background='#181a19', foreground='#d10232', highlightbackground='#000000',
+                                          activebackground='#d10232', activeforeground='#181a19')
         self._x = x
         self._y = y
         self._value = value
