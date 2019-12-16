@@ -14,7 +14,7 @@ source ~/.bashrc
 
 cd /pathToRepo/msCsp
 
-python3 minesweeper.py
+python3 ms.py
   
 NOTES:
     Has different propagators to use and test with such as plain Backtracking, Forward checking 
