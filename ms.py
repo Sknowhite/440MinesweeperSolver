@@ -18,9 +18,9 @@ class Minesweeper:
         self.win_times = 0
 
         # Board: 10x10 with 10 mines
-        self.row_size = 13
-        self.col_size = 13
-        self.mines_amount = 20
+        self.row_size = 10
+        self.col_size = 10
+        self.mines_amount = 10
         self.remaining_mines = self.mines_amount
         self.flags = 0
         self.is_over = False
