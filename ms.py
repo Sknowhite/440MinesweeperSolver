@@ -1,8 +1,10 @@
-import random
+import random, time
 import msCsp
 from BoardButton import *
 from csp import *
 from props import *
+
+"""LINE 315 TO CHANGE PROPAGATOR"""
 
 
 class Minesweeper:
@@ -16,9 +18,9 @@ class Minesweeper:
         self.win_times = 0
 
         # Board: 10x10 with 10 mines
-        self.row_size = 10
-        self.col_size = 10
-        self.mines_amount = 10
+        self.row_size = 13
+        self.col_size = 13
+        self.mines_amount = 20
         self.remaining_mines = self.mines_amount
         self.flags = 0
         self.is_over = False
@@ -81,7 +83,7 @@ class Minesweeper:
                                   background='#181a19', foreground='#d10232', highlightbackground='#000000',
                                   activebackground='#d10232', activeforeground='#181a19')
         self.solveButton.grid(row=self.row_size + 3, column=0, columnspan=6, sticky=W)
-        self.solveButton.bind("<Button-1>", lambda Button: self.solve_complete_multiple(1000))
+        self.solveButton.bind("<Button-1>", lambda Button: self.solve_complete_multiple(1000))  # Number of Solves
 
     def newGame(self):
         """Initialize all attributes for new game."""
@@ -264,18 +266,29 @@ class Minesweeper:
         self.game_times = 0
         print(
             "board size: {0}x{1}\nmines #: {2}\n{3}".format(self.row_size, self.col_size, self.mines_amount, "-" * 27))
+        runTime = time.time()
+        indTimes = []
         for i in range(times):
+            thisTestTime = time.time()
             self.solve_complete()
             if self.is_win():
                 self.win_times += 1
             self.newGame()
             if (i + 1) % 100 == 0:
                 print("solved: " + str(i + 1) + " times")
+            indTimes.append(time.time() - thisTestTime)
 
+        runTime = time.time() - runTime
+        avgTime = 0
+        for i in indTimes:
+            avgTime += i
+        avgTime = avgTime / len(indTimes)
         print("-------Run results---------")
         print("Matches played: " + str(self.game_times))
         print("Wins: " + str(self.win_times))
         print("Win rate: " + str(self.win_times / self.game_times))
+        print("Avg. Solve Times: ", avgTime)
+        print("Total Time: " + str(runTime))
         self.win_times = 0
         self.game_times = 0
 
